@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080a0e">
+<title>科技时讯 · 文楚伯 | Roadster 互动游戏</title>
+<style>
+:root{
+  --bg:#080a0e;--panel:#10151d;--line:#27303b;
+  --white:#f3f6fa;--muted:#8b96a5;--blue:#9bdcff;
+  --max:1240px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:85px}
+body{
+  margin:0;background:var(--bg);color:var(--white);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",
+  "PingFang SC","Microsoft YaHei",sans-serif;
+  overflow-x:hidden
+}
+button,a{font:inherit}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
+::selection{background:#9bdcff;color:#080a0e}
+#stars{position:fixed;inset:0;width:100%;height:100%;
+  z-index:-2;pointer-events:none}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:5;
+  opacity:.12;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.15'/%3E%3C/svg%3E")}
+header{
+  height:76px;position:fixed;inset:0 0 auto;z-index:20;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 6%;border-bottom:1px solid #ffffff12;
+  background:#080a0edb;backdrop-filter:blur(20px)
+}
+.brand{font-size:13px;font-weight:650;letter-spacing:2px}
+.brand em{font-style:normal;color:var(--blue)}
+nav{display:flex;gap:28px;align-items:center}
+nav a{font-size:12px;color:#a5afbd;transition:.2s}
+nav a:hover{color:white}
+.menu-btn{display:none;background:none;color:white;border:0}
+.wrap{width:min(var(--max),88%);margin:auto}
+.eyebrow{font-size:10px;letter-spacing:3px;color:var(--blue)}
+.muted{color:var(--muted);line-height:1.95;font-size:14px}
+.btn{
+  border:1px solid #ffffff36;background:transparent;color:white;
+  padding:13px 20px;font-size:12px;letter-spacing:.5px;
+  transition:.25s;display:inline-flex;gap:15px;align-items:center;
+  justify-content:center
+}
+.btn:hover{border-color:var(--blue);transform:translateY(-2px)}
+.btn.light{background:#f2f5f8;color:#0a0c10;border-color:#f2f5f8}
+.btn.light:hover{background:var(--blue)}
+.hero{
+  min-height:100svh;position:relative;display:flex;
+  flex-direction:column;justify-content:center;overflow:hidden;
+  padding:130px 0 45px
+}
+.hero-top{display:flex;align-items:end;justify-content:space-between;gap:20px}
+.hero h1{font-size:clamp(42px,7.4vw,94px);line-height:.99;
+  letter-spacing:-.065em;font-weight:550;margin:24px 0}
+.hero h1 span{color:#a3b0bf}
+.hero-copy{max-width:400px}
+.hero-copy p{max-width:350px}
+.hero-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}
+.visual{
+  height:clamp(270px,39vw,490px);position:relative;
+  display:grid;place-items:center;perspective:1100px;
+  margin-top:8px;isolation:isolate
+}
+.visual:before{
+  content:"";position:absolute;width:75%;height:55%;
+  background:radial-gradient(ellipse,#a5d9ff17,transparent 68%);
+  filter:blur(20px)
+}
+.grid-floor{
+  position:absolute;bottom:3%;width:120%;height:45%;
+  transform:rotateX(66deg);transform-origin:bottom;
+  background-image:linear-gradient(#7bb7dc12 1px,transparent 1px),
+  linear-gradient(90deg,#7bb7dc12 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:linear-gradient(transparent,#000 35%,transparent);
+  z-index:-1
+}
+.car-wrap{
+  width:min(850px,98%);position:relative;transform-style:preserve-3d;
+  animation:carFloat 6s ease-in-out infinite;transition:transform .18s
+}
+.car-svg{width:100%;height:auto;overflow:visible;filter:
+  drop-shadow(0 25px 30px #000b) drop-shadow(0 0 25px #87cfff0c)}
+.car-glow{position:absolute;left:13%;right:13%;bottom:6%;
+  height:12px;background:#85cfff27;filter:blur(18px);border-radius:50%}
+@keyframes carFloat{0%,100%{translate:0 4px}50%{translate:0 -8px}}
+.ring{
+  position:absolute;width:64%;height:25%;bottom:9%;
+  border:1px solid #86cfff26;border-radius:50%;
+  transform:rotateX(72deg);box-shadow:0 0 30px #82caff0b
+}
+.ring:after{content:"";position:absolute;inset:15%;border:1px solid #86cfff19;border-radius:50%}
+.thruster-glow{opacity:0;transition:.4s}
+.thrusting .thruster-glow{opacity:1;animation:boost .55s ease-in-out infinite alternate}
+@keyframes boost{from{opacity:.35}to{opacity:1}}
+.hero-bottom{display:flex;justify-content:space-between;gap:20px;
+  border-top:1px solid #ffffff1c;padding-top:20px;margin-top:5px}
+.micro{font-size:10px;color:#7c899a;letter-spacing:1px;line-height:1.8}
+.scroll-hint{display:flex;align-items:center;gap:10px}
+.scroll-hint i{width:35px;height:1px;background:var(--blue)}
+section.content{padding:120px 0;border-top:1px solid #ffffff10}
+.section-heading{display:grid;grid-template-columns:1fr 1fr;gap:35px;
+  align-items:end;margin-bottom:55px}
+h2{font-size:clamp(34px,5vw,61px);font-weight:500;
+  letter-spacing:-.055em;line-height:1.1;margin:18px 0}
+.section-heading p{max-width:440px;justify-self:end}
+.intro-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:18px}
+.feature{
+  background:linear-gradient(140deg,#151c26,#0b0e14);
+  border:1px solid #ffffff13;padding:30px;min-height:250px;
+  position:relative;overflow:hidden
+}
+.feature .number{font-size:10px;color:var(--blue);letter-spacing:2px}
+.feature h3{font-size:24px;font-weight:500;margin:45px 0 15px}
+.feature p{font-size:13px;color:var(--muted);line-height:2;max-width:460px}
+.feature .big-mark{position:absolute;right:22px;top:20px;
+  font-size:78px;color:#ffffff07;font-weight:800}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid var(--line);margin-top:40px}
+.stat{padding:24px 15px 10px 0;border-right:1px solid var(--line)}
+.stat:last-child{border:0;padding-left:20px}
+.stat:nth-child(2){padding-left:20px}
+.stat strong{font-size:clamp(18px,2.5vw,28px);font-weight:500}
+.stat p{font-size:11px;color:var(--muted);line-height:1.7}
+.disclaimer{font-size:11px;color:#728095;line-height:1.9;margin-top:20px}
+.dark-panel{background:#0c1118;border:1px solid #ffffff13;padding:30px}
+.engine-layout{display:grid;grid-template-columns:1fr .8fr;gap:45px;align-items:center}
+.engine-art{
+  min-height:360px;position:relative;display:grid;place-items:center;
+  background:radial-gradient(ellipse,#172432 0%,#0b1017 60%,transparent 80%);
+  overflow:hidden
+}
+.engine-art svg{width:90%;max-width:480px}
+.engine-copy h3{font-size:25px;font-weight:500;line-height:1.4}
+.engine-copy p{font-size:13px;color:var(--muted);line-height:2}
+.engine-points{list-style:none;padding:0;margin-top:28px}
+.engine-points li{border-top:1px solid #ffffff18;padding:16px 0;
+  display:flex;gap:20px;font-size:12px;line-height:1.8}
+.engine-points b{font-weight:500;color:var(--blue);min-width:28px}
+.lab-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lab-card{padding:28px;border:1px solid #ffffff18;background:#0b1017}
+.lab-card h3{font-size:19px;font-weight:500}
+.lab-card p{font-size:12px;color:var(--muted);line-height:1.9}
+.control-row{display:flex;justify-content:space-between;gap:20px;
+  font-size:12px;color:#b7c2d0;margin:28px 0 12px}
+input[type=range]{width:100%;accent-color:#a1ddff;cursor:pointer}
+.gauge{height:3px;background:#283443;margin:25px 0}
+.gauge span{height:100%;display:block;background:var(--blue);width:50%;transition:.2s}
+.output{font-size:12px;color:var(--blue);margin-top:15px}
+.timeline{border-top:1px solid var(--line)}
+.timeline article{display:grid;grid-template-columns:100px 1fr;gap:25px;
+  padding:27px 0;border-bottom:1px solid var(--line)}
+.timeline time{font-size:11px;color:var(--blue);letter-spacing:1px}
+.timeline h3{font-size:18px;font-weight:500;margin:0 0 8px}
+.timeline p{margin:0;color:var(--muted);font-size:13px;line-height:1.9}
+.sources{display:flex;flex-wrap:wrap;gap:12px;margin-top:25px}
+.sources a{font-size:11px;color:#c2d3e2;border-bottom:1px solid #52677a;padding-bottom:5px}
+footer{padding:38px 0 55px;border-top:1px solid #ffffff13}
+.footer-inner{display:flex;justify-content:space-between;gap:25px;align-items:start}
+.footer-inner p{font-size:11px;line-height:1.9;color:#758397;max-width:440px}
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s,transform .8s}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.enter-overlay{position:fixed;inset:0;z-index:30;background:#080a0e;
+  display:grid;place-items:center;padding:30px;transition:opacity .8s,visibility .8s}
+.enter-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.enter-inner{text-align:center;width:min(700px,100%)}
+.enter-inner .mini-car{width:min(350px,85%);margin:0 auto 35px}
+.enter-inner h1{font-size:clamp(35px,6vw,70px);font-weight:500;
+  letter-spacing:-.06em;margin:22px 0}
+.enter-inner p{font-size:13px;line-height:2;color:var(--muted);margin-bottom:28px}
+.enter-line{width:1px;height:42px;background:linear-gradient(transparent,var(--blue));
+  margin:0 auto 28px}
+@media(max-width:760px){
+  header{height:65px;padding:0 6%}
+  nav{gap:14px}nav a{font-size:10px}
+  .hero-top{display:block}.hero-copy{margin-top:28px}
+  .hero{padding-top:115px}
+  .visual{height:300px;margin-top:25px}
+  .hero-bottom{flex-wrap:wrap}
+  section.content{padding:82px 0}
+  .section-heading,.intro-grid,.engine-layout,.lab-grid{grid-template-columns:1fr}
+  .section-heading p{justify-self:start}
+  .feature{min-height:220px}
+  .engine-art{min-height:260px}
+  .stats{grid-template-columns:1fr}
+  .stat,.stat:nth-child(2),.stat:last-child{padding:17px 0;border-right:0;border-bottom:1px solid var(--line)}
+  .timeline article{grid-template-columns:65px 1fr;gap:15px}
+}
+@media(max-width:430px){
+  .brand{font-size:11px;letter-spacing:1px}
+  nav{gap:10px}nav a{font-size:9px}
+  .wrap{width:88%}.btn{padding:12px 14px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;
+  animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* Roadster motion lab — isolated styling; the rest of the original page is unchanged */
+.roadster-lab{border:1px solid #ffffff19;background:linear-gradient(145deg,#0b1119,#07090d 72%);box-shadow:0 25px 90px #0007;overflow:hidden}
+.lab-stage-top{height:48px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff13;font-size:9px;letter-spacing:1.8px;color:#c9d6e3}
+.live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#8de0ff;box-shadow:0 0 12px #69caff;margin-right:8px}
+.stage-muted{color:#607084}
+.stage-status{color:#8bd7ff;font-size:9px}
+.lab-canvas-wrap{height:clamp(310px,48vw,570px);position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 57%,#14283a 0%,#0a111a 38%,#06080c 78%)}
+#roadsterCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
+.stage-vignette{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#05070c88,transparent 20%,transparent 80%,#05070c88),linear-gradient(0deg,#05070ce0,transparent 26%,transparent 78%,#05070c55)}
+.stage-label{position:absolute;top:22px;display:flex;flex-direction:column;gap:5px;font-size:8px;letter-spacing:2px;color:#71879a;pointer-events:none}
+.stage-label strong{font-size:11px;font-weight:500;color:#dbeaf5;letter-spacing:1px}
+.stage-label-left{left:22px}.stage-label-right{right:22px;text-align:right}
+.stage-caption{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);white-space:nowrap;font-size:10px;letter-spacing:1.5px;color:#b8d7e9;text-shadow:0 0 14px #65c9ff88;pointer-events:none}
+.lab-control-panel{display:grid;grid-template-columns:1.25fr .8fr 1.15fr;gap:24px;padding:22px;border-top:1px solid #ffffff13;align-items:center}
+.lab-main-controls{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.lab-main-controls .btn{padding:12px 15px}
+.lab-control-hint{width:100%;font-size:10px;color:#758396;line-height:1.7;margin-top:3px}
+.lab-tuning .control-row{margin:0 0 14px}
+.lab-readouts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lab-readouts div{display:flex;flex-direction:column;gap:8px;border-left:1px solid #ffffff19;padding-left:12px;min-width:0}
+.lab-readouts span{font-size:8px;letter-spacing:1.2px;color:#66798d}
+.lab-readouts strong{font-size:11px;font-weight:500;color:#c9eaff;white-space:nowrap}
+.lab-footnote{padding:13px 22px;border-top:1px solid #ffffff10;font-size:9px;letter-spacing:.35px;line-height:1.8;color:#637286}
+@media(max-width:760px){.lab-control-panel{grid-template-columns:1fr;gap:22px}.lab-readouts{padding-top:15px;border-top:1px solid #ffffff12}.lab-canvas-wrap{height:380px}.stage-label{top:15px}.stage-label-left{left:13px}.stage-label-right{right:13px}.stage-caption{font-size:8px;letter-spacing:.8px;bottom:14px}}
+
+
+/* Reveal-stage refinements */
+.lab-canvas-wrap{height:clamp(330px,48vw,590px);background:#05070b}
+.lab-countdown{position:absolute;left:50%;top:49%;transform:translate(-50%,-50%);font-size:clamp(27px,5vw,58px);font-weight:200;letter-spacing:.24em;color:#f1f8ff;text-shadow:0 0 28px #9bdcff;opacity:0;pointer-events:none}
+.lab-countdown.flash{animation:countFlash .7s ease-out both}
+@keyframes countFlash{0%{opacity:0;transform:translate(-50%,-50%) scale(1.35)}25%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(.85)}}
+@media(max-width:760px){.lab-canvas-wrap{height:390px}.lab-countdown{top:47%}}
+
+
+/* External game launch card: no iframe, opens the game directly */
+.game-embed-shell { overflow: hidden; }
+.game-open-link { color: #a8dfff; text-decoration: none; font-size: 12px; letter-spacing: .04em; white-space: nowrap; }
+.game-open-link:hover { color: #fff; }
+.game-launch-card { min-height: clamp(300px, 42vw, 470px); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:40px 22px; position:relative; overflow:hidden; background:radial-gradient(ellipse at 50% 72%, #3b8bc52b, transparent 45%), linear-gradient(145deg,#0b111a,#05070c 70%); }
+.game-launch-card:before { content:""; position:absolute; inset:0; opacity:.55; background-image:linear-gradient(#83bfe20b 1px,transparent 1px),linear-gradient(90deg,#83bfe20b 1px,transparent 1px); background-size:38px 38px; transform:perspective(420px) rotateX(58deg) scale(1.6); transform-origin:bottom; pointer-events:none; }
+.game-launch-orbit { width:112px;height:112px;border:1px solid #9bdcff6b;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 55px #75caff17,inset 0 0 28px #75caff12;margin-bottom:24px;position:relative; }
+.game-launch-orbit:before,.game-launch-orbit:after { content:"";position:absolute;inset:12px;border:1px solid #9bdcff36;border-radius:50%; }
+.game-launch-orbit:after { inset:-9px;border-style:dashed;opacity:.55; }
+.game-launch-orbit span { font-size:37px;color:#c6eaff;transform:translateX(2px); }
+.game-launch-card h3 { margin:0 0 10px;font-size:clamp(22px,3vw,34px);font-weight:450;letter-spacing:-.04em;position:relative; }
+.game-launch-card p { max-width:480px;color:#94a4b7;font-size:13px;line-height:1.9;margin:0 0 24px;position:relative; }
+.game-launch-card .btn { position:relative; }
+.game-launch-meta { margin-top:17px;font-size:10px;letter-spacing:1px;color:#64758a;position:relative; }
+.game-footer-panel { padding-top: 18px; }
+@media (max-width: 700px) { .game-open-link { font-size: 10px; } .game-launch-card { min-height:330px;padding:30px 18px; } }
+
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="grain"></div>
+
+<header>
+  <a class="brand" href="#home">科技时讯 <em>·</em> 文楚伯</a>
+  <nav>
+    <a href="#home">首页</a>
+    <a href="#story">专题</a>
+    <a href="#engineering">工程原理</a>
+    <a href="#lab">交互游戏</a>
+  </nav>
+</header>
+
+<!-- 首屏开场 -->
+<div class="enter-overlay" id="intro">
+  <div class="enter-inner">
+    <div class="eyebrow">TECHNOLOGY NEWS / 001</div>
+    <h1>未来，不止于地面。</h1>
+    <p>当电动跑车遇上航空航天技术，<br>一次工程探索由此展开。</p>
+    <div class="enter-line"></div>
+    <button class="btn light" id="enter">进入专题 <span>↗</span></button>
+    <p style="font-size:10px;margin-top:24px">TESLA ROADSTER / CONCEPT EXPLORATION</p>
+  </div>
+</div>
+
+<main>
+<section class="hero" id="home">
+  <div class="wrap">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow">SPECIAL REPORT / OCT 2026</div>
+        <h1>ROADSTER<br><span>BEYOND LIMITS.</span></h1>
+      </div>
+      <div class="hero-copy">
+        <div class="eyebrow">TESLA × SPACE TECHNOLOGY</div>
+        <p class="muted">一辆电动跑车，一套特殊推进系统。探索第二代 Tesla Roadster 背后的设计理念、工程挑战与未来想象。</p>
+        <div class="hero-buttons">
+          <a class="btn light" href="#story">开始探索 ↗</a>
+          <a class="btn" href="#engineering">了解技术</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 原创 SVG 跑车示意，不冒充官方三维模型 -->
+    <div class="visual" id="visual">
+      <div class="grid-floor"></div>
+      <div class="ring"></div>
+      <div class="car-wrap" id="car">
+        <div class="car-glow"></div>
+        <svg class="car-svg" viewBox="0 0 900 360" role="img" aria-label="未来感银色跑车原创示意图">
+          <defs>
+            <linearGradient id="paint" x1="0" y1="0" x2="0.2" y2="1">
+              <stop offset="0" stop-color="#ffffff"/>
+              <stop offset=".24" stop-color="#cbd6df"/>
+              <stop offset=".48" stop-color="#687989"/>
+              <stop offset=".67" stop-color="#293644"/>
+              <stop offset=".86" stop-color="#a9bac7"/>
+              <stop offset="1" stop-color="#e7edf2"/>
+            </linearGradient>
+            <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#91c8e9"/>
+              <stop offset=".4" stop-color="#243b50"/>
+              <stop offset="1" stop-color="#080f19"/>
+            </linearGradient>
+            <linearGradient id="tire" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#29333e"/><stop offset=".5" stop-color="#06090d"/>
+              <stop offset="1" stop-color="#202a35"/>
+            </linearGradient>
+            <linearGradient id="boost" x1="0" y1="0" x2="0" y2="1">
+              <stop stop-color="#e4f7ff" stop-opacity=".9"/>
+              <stop offset="1" stop-color="#54bfff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- 地面阴影 -->
+          <ellipse cx="460" cy="282" rx="330" ry="25" fill="#000" opacity=".5"/>
+          <!-- 后轮 -->
+          <g transform="translate(680 245)">
+            <ellipse rx="66" ry="80" fill="#040609" stroke="#71808c" stroke-width="4"/>
+            <ellipse rx="48" ry="60" fill="url(#tire)" stroke="#a0acb7" stroke-width="2"/>
+            <ellipse rx="36" ry="47" fill="#18222d" stroke="#6c8295" stroke-width="2"/>
+            <g stroke="#b7c5d0" stroke-width="4">
+              <path d="M0 -39V39 M-30 -25L30 25 M30 -25L-30 25 M-34 0H34"/>
+            </g>
+            <circle r="11" fill="#c9d5de"/>
+          </g>
+          <!-- 前轮 -->
+          <g transform="translate(250 253)">
+            <ellipse rx="56" ry="68" fill="#030508" stroke="#75828e" stroke-width="4"/>
+            <ellipse rx="39" ry="50" fill="url(#tire)" stroke="#a0acb7" stroke-width="2"/>
+            <ellipse rx="29" ry="38" fill="#1b2631" stroke="#70869a" stroke-width="2"/>
+            <g stroke="#bdcbd5" stroke-width="3">
+              <path d="M0 -32V32 M-25 -19L25 19 M25 -19L-25 19 M-27 0H27"/>
+            </g>
+            <circle r="8" fill="#d6e0e7"/>
+          </g>
+          <!-- 车体主轮廓 -->
+          <path d="M94 239 L111 211 L167 192 L222 171
+                   Q277 128 352 102 L478 91
+                   Q526 93 571 130 L637 178
+                   L743 198 L793 220 L813 249
+                   L786 267 L734 272 Q724 218 680 216
+                   Q631 217 619 276 L310 282
+                   Q305 228 253 228 Q207 229 199 279
+                   L135 269 L99 257 Z"
+                fill="url(#paint)" stroke="#dce8f1" stroke-width="2"/>
+          <!-- 车顶与座舱 -->
+          <path d="M252 171 Q299 120 355 113 L477 105
+                   Q518 109 553 139 L589 173
+                   L422 177 L302 184 Z"
+                fill="url(#glass)" stroke="#b6c7d5" stroke-width="2"/>
+          <path d="M421 110 L416 176 M479 111 L521 173"
+                stroke="#c7d6e2" stroke-width="2" opacity=".65"/>
+          <!-- 车身高光 -->
+          <path d="M115 218 L232 181 L349 181 L567 184 L733 211"
+                fill="none" stroke="#fff" stroke-width="3" opacity=".75"/>
+          <path d="M121 242 L202 239 L308 250 L617 247 L785 240"
+                fill="none" stroke="#101820" stroke-width="5" opacity=".7"/>
+          <!-- 前灯 -->
+          <path d="M112 218 L167 202 L196 204 L155 224 L116 229Z"
+                fill="#e8f7ff" stroke="#fff" stroke-width="1.5"/>
+          <path d="M121 220 L164 207" stroke="#8ad9ff" stroke-width="4"/>
+          <!-- 尾灯 -->
+          <path d="M751 212 L789 223 L802 236 L770 231Z"
+                fill="#f9f4f2"/>
+          <path d="M760 216 L792 228" stroke="#ff4e58" stroke-width="5"/>
+          <!-- 车门与线条 -->
+          <path d="M413 181 L393 244 L543 246 L560 184"
+                fill="none" stroke="#3e4e5e" stroke-width="2"/>
+          <path d="M436 192 L492 192" stroke="#dce9f2" stroke-width="2"/>
+          <path d="M280 204 L359 196" stroke="#f4f7fa" stroke-width="2" opacity=".6"/>
+          <!-- 侧裙 -->
+          <path d="M311 264 L616 261 L602 276 L316 278Z" fill="#131b25"/>
+          <!-- 推进示意光效 -->
+          <g class="thruster-glow">
+            <path d="M733 254 L842 258 L796 271 L735 266Z" fill="url(#boost)"/>
+            <path d="M740 258 L819 260" stroke="#a6e5ff" stroke-width="4"/>
+            <path d="M739 264 L797 267" stroke="#4cb9ff" stroke-width="2"/>
+          </g>
+          <text x="448" y="326" fill="#b2c8d9" font-size="11"
+                text-anchor="middle" letter-spacing="4">ROADSTER / CONCEPT VIEW</text>
+        </svg>
+      </div>
+    </div>
+    <div class="hero-bottom">
+      <div class="micro">ENGINEERING / DESIGN / PROPULSION</div>
+      <div class="scroll-hint micro"><i></i> 向下滚动，探索技术</div>
+      <div class="micro">INDEPENDENT TECHNOLOGY REPORT</div>
+    </div>
+  </div>
+</section>
+
+<section class="content reveal" id="story">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">01 / THE STORY</div>
+        <h2>不只是速度。<br>还有工程想象。</h2>
+      </div>
+      <p class="muted">2026 年 10 月，Tesla 展示了重新设计的第二代 Roadster。特殊推进装置与车底吸附系统成为这次展示的关注点，也带来了新的工程问题。</p>
+    </div>
+    <div class="intro-grid">
+      <article class="feature">
+        <span class="number">01 — VEHICLE</span>
+        <span class="big-mark">R</span>
+        <h3>电动跑车的另一种形态</h3>
+        <p>Roadster 将电驱性能、轻量化设计和主动空气动力学纳入同一套工程思路。不同版本的配置并不相同，不能将某个版本的功能默认视为全系标配。</p>
+      </article>
+      <article class="feature">
+        <span class="number">02 — PROPULSION</span>
+        <span class="big-mark">↗</span>
+        <h3>从轮胎到推进系统</h3>
+        <p>Rocket 版本的官方描述涉及冷气推进装置。它与普通电机驱动车轮的原理不同，需要额外考虑推进方向、姿态控制和安全边界。</p>
+      </article>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <strong>2026.10.15</strong>
+        <p>第二代 Roadster 展示活动日期</p>
+      </div>
+      <div class="stat">
+        <strong>3 个版本</strong>
+        <p>Performance / Thrust / Rocket</p>
+      </div>
+      <div class="stat">
+        <strong>2028</strong>
+        <p>媒体报道的目标量产年份，非交付保证</p>
+      </div>
+    </div>
+    <p class="disclaimer">注：以上信息依据 Tesla 车型页面及发布活动报道整理。量产时间、性能指标与可用功能可能变化；不同版本规格不可混为一谈。</p>
+  </div>
+</section>
+
+<section class="content reveal" id="engineering">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">02 / ENGINEERING</div>
+        <h2>推进，究竟<br>如何改变运动？</h2>
+      </div>
+      <p class="muted">从物理学的角度看，向下喷出气体可以产生向上的反作用力。真正的系统还必须解决推力大小、方向、姿态、能量和安全等问题。</p>
+    </div>
+    <div class="engine-layout">
+      <div class="engine-art">
+        <svg viewBox="0 0 460 340" role="img" aria-label="推进原理示意图">
+          <defs>
+            <linearGradient id="tank" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#d9e8f3"/><stop offset=".5" stop-color="#607589"/>
+              <stop offset="1" stop-color="#263647"/>
+            </linearGradient>
+            <linearGradient id="gas" x1="0" y1="0" x2="0" y2="1">
+              <stop stop-color="#9de0ff" stop-opacity=".85"/>
+              <stop offset="1" stop-color="#58baff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="230" cy="278" rx="142" ry="24" fill="#000" opacity=".4"/>
+          <rect x="153" y="78" width="154" height="168" rx="24"
+                fill="#151e29" stroke="#8da8bf" stroke-width="2"/>
+          <rect x="170" y="93" width="120" height="139" rx="15"
+                fill="url(#tank)" stroke="#d5e3ee" stroke-width="1.5"/>
+          <path d="M188 104 V221 M208 104 V221 M230 104 V221 M252 104 V221 M273 104 V221"
+                stroke="#ffffff" opacity=".15" stroke-width="2"/>
+          <rect x="207" y="51" width="46" height="30" rx="5"
+                fill="#91a9bc" stroke="#e2f2ff" stroke-width="2"/>
+          <path d="M218 246 L218 266 L204 281 L256 281 L242 266 L242 246Z"
+                fill="#71889b" stroke="#d1e4f2" stroke-width="2"/>
+          <path d="M221 281 L221 326 L239 326 L239 281Z" fill="url(#gas)"/>
+          <path d="M230 299 V323" stroke="#a4e6ff" stroke-width="3"
+                stroke-dasharray="5 7">
+            <animate attributeName="stroke-dashoffset" values="0;24"
+                     dur=".8s" repeatCount="indefinite"/>
+          </path>
+          <path d="M230 33 V7 M218 19 L230 7 L242 19"
+                stroke="#b5e7ff" stroke-width="3" fill="none"/>
+          <text x="230" y="22" fill="#b5e7ff" font-size="10"
+                text-anchor="middle" transform="translate(68 0)">反作用力方向</text>
+          <text x="230" y="160" fill="#f3f8fc" font-size="14"
+                text-anchor="middle">推进系统</text>
+          <text x="230" y="182" fill="#d4e0e9" font-size="10"
+                text-anchor="middle">概念示意</text>
+          <path d="M307 125 H370" stroke="#6e8da5" stroke-width="1.5"/>
+          <text x="375" y="120" fill="#9bdcff" font-size="10">储气装置</text>
+          <text x="375" y="136" fill="#8797a8" font-size="9">概念组件</text>
+          <path d="M246 290 H338" stroke="#6e8da5" stroke-width="1.5"/>
+          <text x="343" y="285" fill="#9bdcff" font-size="10">排气方向</text>
+          <text x="343" y="301" fill="#8797a8" font-size="9">向下喷出</text>
+        </svg>
+      </div>
+      <div class="engine-copy">
+        <div class="eyebrow">HOW IT WORKS</div>
+        <h3>推进力来自气体的动量变化，而不是魔法。</h3>
+        <p>当气体向一个方向高速排出时，系统会受到相反方向的作用力。要让车辆在空中保持稳定，还需要多个方向的力与控制策略协同工作。</p>
+        <ul class="engine-points">
+          <li><b>01</b><span>推力：决定系统能否产生足够的加速度。</span></li>
+          <li><b>02</b><span>姿态：控制俯仰、滚转和偏航方向。</span></li>
+          <li><b>03</b><span>能量：储气容量、质量和工作时间相互制约。</span></li>
+          <li><b>04</b><span>安全：失效保护与法规是实际应用的重要门槛。</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="content reveal" id="lab">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">03 / INTERACTIVE GAME</div>
+        <h2>进入游戏，<br>驾驶 Roadster。</h2>
+      </div>
+      <p class="muted">点击下方入口即可打开你提供的 Flying Roadster 游戏。游戏会在新标签页中运行，不再依赖可能被网站策略拦截的内嵌窗口。</p>
+    </div>
+    <div class="roadster-lab game-embed-shell">
+      <div class="lab-stage-top">
+        <div><span class="live-dot"></span> FLYING ROADSTER <span class="stage-muted">/ INTERACTIVE GAME</span></div>
+        <a class="game-open-link" href="https://flying-roadster-2026.pages.dev" target="_blank" rel="noopener noreferrer">打开游戏 ↗</a>
+      </div>
+      <a class="game-launch-card" href="https://flying-roadster-2026.pages.dev" target="_blank" rel="noopener noreferrer" aria-label="打开 Flying Roadster 互动游戏">
+        <div class="game-launch-orbit" aria-hidden="true"><span>▶</span></div>
+        <h3>FLYING ROADSTER</h3>
+        <p>启动引擎，进入驾驶挑战。点击按钮，在新标签页中直接游玩完整游戏。</p>
+        <span class="btn light">▶ 开始游玩 ↗</span>
+        <div class="game-launch-meta">EXTERNAL GAME · OPENS IN A NEW TAB</div>
+      </a>
+      <div class="lab-footnote">游戏由外部网站提供。点击上方任意入口即可打开原游戏；此处不再尝试内嵌加载。</div>
+    </div>
+  </div>
+</section>
+
+<section class="content reveal" id="timeline">
+  <div class="wrap">
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">04 / FACT CHECK</div>
+        <h2>科技报道，<br>也要核实事实。</h2>
+      </div>
+      <p class="muted">将官方公布、媒体报道与尚待验证的信息分开，是科技时讯最重要的原则。</p>
+    </div>
+    <div class="timeline">
+      <article>
+        <time>2017</time>
+        <div><h3>第二代 Roadster 首次公布</h3>
+        <p>第二代车型计划经历多次调整，后续设计与交付时间持续变化。</p></div>
+      </article>
+      <article>
+        <time>2026.10</time>
+        <div><h3>重新设计的车型公开展示</h3>
+        <p>媒体报道了带有特殊推进系统的演示，以及不同配置版本的相关计划。</p></div>
+      </article>
+      <article>
+        <time>未来</time>
+        <div><h3>从展示走向实际应用</h3>
+        <p>目标量产时间不等于实际交付。可用配置、认证要求与最终规格仍应以正式更新为准。</p></div>
+      </article>
+    </div>
+    <div style="margin-top:45px">
+      <div class="eyebrow">SOURCES / 延伸阅读</div>
+      <div class="sources">
+        <a href="https://www.tesla.com/roadster" target="_blank" rel="noopener noreferrer">Tesla 官方 Roadster 页面 ↗</a>
+        <a href="https://techcrunch.com/2026/10/15/tesla-reveals-spacex-powered-roadster-that-flies-and-falls-with-style/" target="_blank" rel="noopener noreferrer">TechCrunch 发布报道 ↗</a>
+        <a href="https://www.cbsnews.com/news/tesla-roadster-debut-elon-musk-flying-cars-are-real/" target="_blank" rel="noopener noreferrer">CBS News 事件报道 ↗</a>
+      </div>
+      <p class="disclaimer">本网站为个人科技学习与新闻解读项目，与 Tesla、SpaceX 无官方隶属关系。车身插图和实验动画均为原创示意，不代表实车三维模型、官方渲染或真实测试画面。</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div>
+      <a class="brand" href="#home">科技时讯 <em style="color:var(--blue)">·</em> 文楚伯</a>
+      <p>让科技新闻不止于看见，更进一步理解它背后的原理。</p>
+    </div>
+    <p>INDEPENDENT TECHNOLOGY PROJECT<br>© 2026 WEN CHUBO · LEARNING & EXPLORATION</p>
+  </div>
+</footer>
+
+<script>
+// 星空背景
+const canvas=document.getElementById('stars');
+const ctx=canvas.getContext('2d');
+let w,h,dots=[];
+function resize(){
+  const dpr=Math.min(devicePixelRatio||1,2);
+  w=innerWidth;h=innerHeight;
+  canvas.width=w*dpr;canvas.height=h*dpr;
+  canvas.style.width=w+'px';canvas.style.height=h+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  dots=Array.from({length:Math.min(100,Math.floor(w/12))},()=>({
+    x:Math.random()*w,y:Math.random()*h,
+    r:Math.random()*1.2+.2,v:Math.random()*.22+.04
+  }));
+}
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  dots.forEach(p=>{
+    p.y-=p.v;if(p.y<0){p.y=h;p.x=Math.random()*w}
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fillStyle='rgba(176,216,245,.48)';ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+resize();draw();addEventListener('resize',resize);
+
+// 开场进入
+const intro=document.getElementById('intro');
+document.getElementById('enter').addEventListener('click',()=>{
+  intro.classList.add('hidden');
+  document.body.style.overflow='';
+  document.getElementById('home').scrollIntoView({behavior:'smooth'});
+});
+document.body.style.overflow='hidden';
+
+// 跑车随鼠标改变视角
+const visual=document.getElementById('visual');
+const car=document.getElementById('car');
+let pointerEnabled=true;
+visual.addEventListener('pointermove',e=>{
+  if(!pointerEnabled)return;
+  const r=visual.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width-.5;
+  const y=(e.clientY-r.top)/r.height-.5;
+  car.style.transform=`rotateY(${x*13}deg) rotateX(${-y*5}deg)`;
+});
+visual.addEventListener('pointerleave',()=>{
+  car.style.transform='';
+});
+
+// 滚动显现
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting)e.target.classList.add('visible');
+  });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// Roadster reveal-stage animation: ramp approach, inverted traversal, aerial rotation, landing.
+(() => {
+  const canvas=document.getElementById('roadsterCanvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d'),wrap=document.getElementById('labCanvasWrap');
+  const startBtn=document.getElementById('startMotion'),resetBtn=document.getElementById('resetMotion');
+  const motionLabel=document.getElementById('motionLabel'),motionIcon=document.getElementById('motionIcon');
+  const status=document.getElementById('stageStatus'),caption=document.getElementById('stageCaption');
+  const slider=document.getElementById('motionSpeed'),speedValue=document.getElementById('motionSpeedValue');
+  const readoutStatus=document.getElementById('readoutStatus'),readoutPosition=document.getElementById('readoutPosition');
+  const readoutThrust=document.getElementById('readoutThrust'),sceneStep=document.getElementById('sceneStep');
+  const countdown=document.getElementById('labCountdown');
+  let w=0,h=0,dpr=1,progress=0,speed=1,running=false,completed=false,last=0,stars=[],smoke=[],sparks=[],trail=[];
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const ease=(a,b,t)=>{t=clamp((t-a)/(b-a),0,1);return t*t*(3-2*t)};
+  function resize(){const r=wrap.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);w=Math.max(1,r.width);h=Math.max(1,r.height);canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);stars=Array.from({length:Math.round(w/5)},()=>({x:Math.random()*w,y:Math.random()*h*.72,r:Math.random()*1.15+.15,a:Math.random()*.55+.12}));draw();}
+  function groundY(){return h*.79;}
+  function rampPoint(u){
+    // 巨型倒 U 型舞台：车辆从右侧较低入口上行，经过顶部倒挂，再从左侧下降。
+    u=clamp(u,0,1);
+    const x=w*(.78-.50*u);
+    const y=h*(.73-.54*Math.sin(Math.PI*u));
+    return {x,y};
+  }
+  function carPose(p){
+    // 0-.12 从右侧驶入；.12-.78 沿倒 U 型舞台从右上行、顶部倒挂、左侧下降；
+    // .78-.91 在左侧中段喷射冷气；.91-1 从左侧驶离。
+    if(p<.12){const u=p/.12;return {x:w*(.91-.09*u),y:groundY()-8,angle:0,thrust:false,air:false,phase:0};}
+    if(p<.78){const u=(p-.12)/.66;const q=rampPoint(u);const dx=-w*.50,dy=-h*.54*Math.PI*Math.cos(Math.PI*u);const angle=Math.atan2(dy,dx);return {x:q.x,y:q.y-8,angle,thrust:false,air:false,phase:1};}
+    if(p<.91){const u=(p-.78)/.13;const q=rampPoint(.86+.14*u);return {x:q.x,y:q.y-8,angle:Math.atan2(-h*.54*Math.PI*Math.cos(Math.PI*(.86+.14*u)),-w*.50),thrust:true,air:false,phase:2};}
+    const u=(p-.91)/.09;return {x:w*(.28-.20*u),y:h*.72-8,angle:0,thrust:u<.25,air:false,phase:3};
+  }
+  function roundedRect(x,y,ww,hh,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+ww,y,x+ww,y+hh,r);ctx.arcTo(x+ww,y+hh,x,y+hh,r);ctx.arcTo(x,y+hh,x,y,r);ctx.arcTo(x,y,x+ww,y,r);ctx.closePath();}
+  function drawCar(x,y,angle,thrust,scale=1){
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
+    if(thrust){const flick=.82+Math.random()*.32;const len=54*flick;
+      // 左侧坡道中段：两侧向外喷射的冷气推进效果
+      for(const sign of [-1,1]){const g=ctx.createLinearGradient(sign*13,0,sign*len,0);g.addColorStop(0,'#f5fdff');g.addColorStop(.28,'#8fe2ff');g.addColorStop(1,'rgba(57,156,255,0)');ctx.beginPath();ctx.moveTo(sign*13,-4);ctx.quadraticCurveTo(sign*len*.58,-13,sign*len,0);ctx.quadraticCurveTo(sign*len*.58,13,sign*13,4);ctx.closePath();ctx.fillStyle=g;ctx.shadowColor='#65cfff';ctx.shadowBlur=24;ctx.fill();ctx.shadowBlur=0;}
+    }
+    // tires, underbody, sculpted silver silhouette
+    for(const xx of [-25,25]){ctx.beginPath();ctx.ellipse(xx,7,8,5,0,0,Math.PI*2);ctx.fillStyle='#030507';ctx.fill();ctx.strokeStyle='#8297a7';ctx.lineWidth=1;ctx.stroke();ctx.beginPath();ctx.arc(xx,7,2.4,0,Math.PI*2);ctx.fillStyle='#a5bfce';ctx.fill();}
+    const body=ctx.createLinearGradient(0,-20,0,12);body.addColorStop(0,'#ffffff');body.addColorStop(.24,'#c9d6df');body.addColorStop(.55,'#6d8291');body.addColorStop(.82,'#273744');body.addColorStop(1,'#d6e2e9');
+    ctx.beginPath();ctx.moveTo(-44,4);ctx.lineTo(-39,-3);ctx.lineTo(-22,-7);ctx.quadraticCurveTo(-10,-21,7,-19);ctx.quadraticCurveTo(22,-18,29,-7);ctx.lineTo(40,-4);ctx.lineTo(46,2);ctx.lineTo(39,8);ctx.lineTo(24,11);ctx.lineTo(-30,11);ctx.lineTo(-42,8);ctx.closePath();ctx.fillStyle=body;ctx.strokeStyle='#f2fbff';ctx.lineWidth=1;ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-17,-7);ctx.quadraticCurveTo(-8,-17,5,-16);ctx.quadraticCurveTo(18,-16,25,-7);ctx.closePath();const glass=ctx.createLinearGradient(0,-18,0,-5);glass.addColorStop(0,'#a8e6ff');glass.addColorStop(1,'#102130');ctx.fillStyle=glass;ctx.fill();ctx.strokeStyle='#c4e7f6';ctx.lineWidth=.7;ctx.stroke();
+    ctx.beginPath();ctx.moveTo(38,-2);ctx.lineTo(44,1);ctx.strokeStyle='#eafaff';ctx.lineWidth=2;ctx.shadowColor='#a9e7ff';ctx.shadowBlur=8;ctx.stroke();ctx.shadowBlur=0;ctx.beginPath();ctx.moveTo(-41,2);ctx.lineTo(-35,4);ctx.strokeStyle='#ff5867';ctx.lineWidth=2.5;ctx.stroke();ctx.restore();
+  }
+  function drawRamp(){
+    const pts=[];for(let i=0;i<=120;i++)pts.push(rampPoint(i/120));
+    // U-shaped monumental ramp with broad stage supports and illuminated rim
+    ctx.beginPath();ctx.moveTo(pts[0].x,groundY()+7);ctx.lineTo(pts[0].x,pts[0].y+8);for(const p of pts)ctx.lineTo(p.x,p.y+8);ctx.lineTo(pts[pts.length-1].x,groundY()+7);ctx.closePath();
+    const side=ctx.createLinearGradient(0,h*.12,0,groundY());side.addColorStop(0,'#43515e');side.addColorStop(.48,'#18232e');side.addColorStop(1,'#080c12');ctx.fillStyle=side;ctx.fill();
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);for(const p of pts)ctx.lineTo(p.x,p.y);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#05090e';ctx.lineWidth=36;ctx.stroke();ctx.strokeStyle='#536473';ctx.lineWidth=28;ctx.stroke();ctx.strokeStyle='#15232f';ctx.lineWidth=20;ctx.stroke();ctx.strokeStyle='#d8f3ff';ctx.lineWidth=2;ctx.shadowColor='#b9eaff';ctx.shadowBlur=16;ctx.stroke();ctx.shadowBlur=0;
+    // red/white LED markers along the track
+    for(let i=5;i<pts.length;i+=6){const p=pts[i];ctx.beginPath();ctx.arc(p.x,p.y,1.7,0,Math.PI*2);ctx.fillStyle=i%2?'#ff5966':'#c7f0ff';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=8;ctx.fill();}ctx.shadowBlur=0;
+    // right entrance and left exit decks
+    ctx.fillStyle='#17232e';ctx.fillRect(w*.70,groundY()+5,w*.23,10);ctx.fillRect(w*.06,groundY()+5,w*.24,10);ctx.fillStyle='#7d8f9d';ctx.fillRect(w*.70,groundY()+5,w*.23,1);ctx.fillRect(w*.06,groundY()+5,w*.24,1);
+    // structural braces beneath both sides of the arch
+    for(const idx of [16,31,48,68,87,104]){const p=pts[idx];ctx.beginPath();ctx.moveTo(p.x,p.y+12);ctx.lineTo(p.x+(p.x>w*.52?13:-13),groundY()+4);ctx.strokeStyle='#263744';ctx.lineWidth=7;ctx.stroke();ctx.strokeStyle='#718594';ctx.lineWidth=1.2;ctx.stroke();}
+  }
+  function drawCrowdAndStage(){
+    // deep black stage, distant truss, audience silhouettes
+    const floor=groundY()+10;ctx.fillStyle='#080b10';ctx.fillRect(0,floor,w,h-floor);
+    const floorGlow=ctx.createLinearGradient(0,floor,0,h);floorGlow.addColorStop(0,'#14212d');floorGlow.addColorStop(1,'#050609');ctx.fillStyle=floorGlow;ctx.fillRect(0,floor,w,h-floor);
+    ctx.strokeStyle='#253b4d';ctx.globalAlpha=.42;ctx.lineWidth=1;for(let i=0;i<12;i++){ctx.beginPath();ctx.moveTo(w*.55,floor);ctx.lineTo(i*w/11,h);ctx.stroke()}for(let i=1;i<7;i++){const y=floor+(h-floor)*i/7;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}ctx.globalAlpha=1;
+    // stage truss and lamps
+    ctx.strokeStyle='#35404b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(w*.05,h*.09);ctx.lineTo(w*.95,h*.09);ctx.stroke();for(let i=0;i<11;i++){const x=w*(.08+i*.084);ctx.beginPath();ctx.moveTo(x,h*.09);ctx.lineTo(x,h*.14);ctx.strokeStyle='#293440';ctx.lineWidth=2;ctx.stroke();}
+    // cone spotlights
+    for(const [x,spread] of [[w*.2,w*.16],[w*.48,w*.2],[w*.79,w*.17]]){const g=ctx.createLinearGradient(x,h*.12,x,h*.78);g.addColorStop(0,'rgba(175,220,255,.15)');g.addColorStop(1,'rgba(105,174,220,0)');ctx.beginPath();ctx.moveTo(x-7,h*.12);ctx.lineTo(x-spread,h*.79);ctx.lineTo(x+spread,h*.79);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.arc(x,h*.12,4,0,Math.PI*2);ctx.fillStyle='#e9f7ff';ctx.shadowColor='#a4ddff';ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;}
+    // crowd at bottom edge
+    for(let i=0;i<Math.round(w/12);i++){const x=i*12+Math.sin(i*2.3)*3;const y=h*.91+Math.sin(i*1.7)*3;const r=3+(i%4)*.7;ctx.fillStyle=i%5===0?'#1d2c39':'#05070a';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.fillRect(x-r,y+r*.6,r*2,h*.1);if(i%7===0){ctx.fillStyle='#9bdcff';ctx.globalAlpha=.45;ctx.fillRect(x+6,y-8,2,5);ctx.globalAlpha=1;}}
+    // understated event-screen typography
+    ctx.fillStyle='#8aa0b3';ctx.font='9px sans-serif';ctx.letterSpacing='3px';ctx.fillText('TESLA',w*.77,h*.26);ctx.fillStyle='#dbeaf4';ctx.font='500 17px sans-serif';ctx.letterSpacing='4px';ctx.fillText('ROADSTER',w*.77,h*.31);ctx.fillStyle='#6d8294';ctx.font='8px sans-serif';ctx.letterSpacing='1.5px';ctx.fillText('BEYOND THE ROAD',w*.77,h*.35);ctx.fillStyle='#d7e6ef';ctx.font='8px sans-serif';ctx.letterSpacing='1px';ctx.fillText('RIGHT IN  /  LEFT OUT',w*.77,h*.39);
+  }
+  function drawSmoke(){for(let i=smoke.length-1;i>=0;i--){const s=smoke[i];s.x+=s.vx;s.y+=s.vy;s.r+=.18;s.life-=.012;if(s.life<=0){smoke.splice(i,1);continue;}ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(205,225,239,${s.life*.13})`;ctx.fill();}}
+  function setPhase(phase){const data=[['01 / RIGHT ENTRY','车辆从舞台右侧驶入，接近 U 型坡道入口。'],['02 / INVERTED ARCH','车辆沿巨型倒 U 型舞台上行，经过顶部倒挂后从左侧下降。'],['03 / COLD-GAS THRUST','车辆到达左侧中段，向外喷射冷气推进气流。'],['04 / LEFT EXIT','车辆从舞台左侧离开，喷流与雾效逐渐散去。']][phase];sceneStep.textContent=data[0];caption.textContent=data[1];}
+  function draw(){
+    ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#030508');bg.addColorStop(.48,'#0b131d');bg.addColorStop(1,'#05070a');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+    const halo=ctx.createRadialGradient(w*.47,h*.42,5,w*.47,h*.42,w*.56);halo.addColorStop(0,'rgba(52,104,145,.18)');halo.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
+    stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(190,225,248,${s.a})`;ctx.fill()});
+    drawCrowdAndStage();drawRamp();
+    const car=carPose(progress);const floor=groundY();
+    // car shadow grows softer during the brief aerial section
+    const shadowY=car.air?floor+4:car.y+14;ctx.beginPath();ctx.ellipse(car.x+4,shadowY,car.air?38:31,car.air?7:5,0,0,Math.PI*2);ctx.fillStyle=car.air?'rgba(0,0,0,.28)':'rgba(0,0,0,.6)';ctx.fill();
+    // subtle trail during flight
+    if(car.air){trail.push({x:car.x-24,y:car.y+8,life:1});if(trail.length>20)trail.shift();}for(let i=trail.length-1;i>=0;i--){const t=trail[i];t.life-=.035;ctx.beginPath();ctx.arc(t.x,t.y,2.5,0,Math.PI*2);ctx.fillStyle=`rgba(130,211,255,${Math.max(0,t.life*.35)})`;ctx.fill();if(t.life<=0)trail.splice(i,1);}
+    drawCar(car.x,car.y,car.angle,car.thrust,Math.min(1,w/800));drawSmoke();
+    // floor landing smoke appears at the landing beat
+    if(progress>.78&&progress<.91&&running&&Math.random()<.95){for(let i=0;i<3;i++)smoke.push({x:car.x+(Math.random()-.5)*48,y:car.y+(Math.random()-.5)*28,vx:(Math.random()-.5)*2.6,vy:(Math.random()-.5)*1.5,r:4+Math.random()*7,life:.65+Math.random()*.35});}
+    // stage camera UI accents
+    ctx.fillStyle='#7790a4';ctx.font='9px sans-serif';ctx.letterSpacing='1.5px';ctx.fillText('LIVE DEMO / CONCEPT REPLAY',w*.045,h*.17);ctx.fillStyle='#49677e';ctx.fillText('SIMULATION ONLY',w*.045,h*.195);
+    ctx.fillStyle='#a9dfff';ctx.font='10px sans-serif';ctx.fillText(String(Math.round(progress*100)).padStart(2,'0')+'%',w*.92,h*.17);ctx.fillStyle='#30485a';ctx.fillRect(w*.83,h*.195,w*.12,2);ctx.fillStyle='#9bdcff';ctx.fillRect(w*.83,h*.195,w*.12*progress,2);
+  }
+  function showCountdown(){countdown.classList.remove('flash');countdown.textContent='3';void countdown.offsetWidth;countdown.classList.add('flash');setTimeout(()=>{countdown.textContent='2';countdown.classList.remove('flash');void countdown.offsetWidth;countdown.classList.add('flash');},650);setTimeout(()=>{countdown.textContent='1';countdown.classList.remove('flash');void countdown.offsetWidth;countdown.classList.add('flash');},1300);}
+  function setState(state){
+    if(state==='run'){if(progress>=1){progress=0;smoke=[];trail=[];}running=true;completed=false;status.textContent='DEMO IN PROGRESS';readoutStatus.textContent='RUNNING';motionLabel.textContent='暂停演示';motionIcon.textContent='Ⅱ';readoutThrust.textContent=progress>.78&&progress<.91?'ACTIVE':'STANDBY';}
+    else if(state==='pause'){running=false;status.textContent='PAUSED';readoutStatus.textContent='PAUSED';motionLabel.textContent='继续演示';motionIcon.textContent='▶';readoutThrust.textContent='STANDBY';}
+    else if(state==='done'){running=false;completed=true;status.textContent='DEMO COMPLETE';readoutStatus.textContent='COMPLETE';motionLabel.textContent='重新演示';motionIcon.textContent='↻';readoutThrust.textContent='OFF';caption.textContent='演示完成 · Roadster 已驶离舞台';sceneStep.textContent='COMPLETE / EXIT';}
+    else{running=false;completed=false;progress=0;smoke=[];trail=[];status.textContent='STANDBY · READY';readoutStatus.textContent='STANDBY';motionLabel.textContent='开始演示';motionIcon.textContent='▶';readoutThrust.textContent='OFF';readoutPosition.textContent='00%';sceneStep.textContent='01 / RIGHT ENTRY';caption.textContent='演示待命 · 点击开始重现发布会动作';}
+  }
+  startBtn.addEventListener('click',()=>{if(running){setState('pause');return;}if(progress>=1)progress=0;setState('run');});
+  resetBtn.addEventListener('click',()=>{setState('reset');draw();});
+  slider.addEventListener('input',()=>{speed=Number(slider.value)/100;speedValue.textContent=speed.toFixed(1)+'×';});
+  function frame(t){if(!last)last=t;const dt=Math.min((t-last)/1000,.05);last=t;if(running){progress+=dt*.095*speed;if(progress>=1){progress=1;setState('done');}const phase=carPose(progress).phase;setPhase(phase);readoutPosition.textContent=String(Math.round(progress*100)).padStart(2,'0')+'%';readoutThrust.textContent=progress>.78&&progress<.91?'ACTIVE':'STANDBY';}draw();requestAnimationFrame(frame);}
+  new ResizeObserver(resize).observe(wrap);resize();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
